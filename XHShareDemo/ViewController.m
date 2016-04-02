@@ -11,6 +11,7 @@
 #import "OpenShareHeader.h"
 #import <MessageUI/MessageUI.h>
 
+
 @interface ViewController ()<XHShareViewDelegate,MFMessageComposeViewControllerDelegate>
 
 @end
@@ -19,20 +20,35 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    CGFloat width = [[UIScreen mainScreen] bounds].size.width;
-    XHShareView *shareView = [[XHShareView alloc] initWithFrame:CGRectMake(40, 50, width * 0.7, 2.5 * 40)];
-    shareView.backgroundColor = [UIColor yellowColor];
+    CGSize size = [[UIScreen mainScreen] bounds].size;
+    CGFloat viewHight = 120;
+    
+    UILabel *sao = [[UILabel alloc]init];
+    sao.textColor = [UIColor redColor];
+    sao.frame = CGRectMake((size.width - 100) * 0.5, 30, 100,100);
+    sao.text = @"扫描二维码";
+    [self.view addSubview:sao];
+    
+    UIImageView *QRcode = [[UIImageView alloc]initWithImage:[UIImage imageNamed:@"2"]];
+    QRcode.frame = CGRectMake(size.width * 0.1, 100, size.width * 0.8, size.width * 0.8);
+    [self.view addSubview:QRcode];
+    
+    UILabel *share = [[UILabel alloc]init];
+    share.textColor = [UIColor blueColor];
+    share.frame = CGRectMake((size.width - 70) * 0.5, CGRectGetMaxY(QRcode.frame) , 70,70);
+    share.text = @"或分享至";
+    [self.view addSubview:share];
+    
+    XHShareView *shareView = [[XHShareView alloc] initWithFrame:CGRectMake(size.width * 0.1 , size.height - viewHight - 20, size.width * 0.8, viewHight)];
     shareView.delegate = self;
     [self.view addSubview:shareView];
 }
-
-
 
 #pragma mark -- XHShareViewDelegate
 - (void) XHDidClickShareBtn:(ShareBtn)type{
     switch (type) {
         case SharePyQuan:{
-            // 点击了朋友圈
+            // 分享到朋友圈
             [self pyqClick];
             break;
         }
@@ -64,8 +80,7 @@
 }
 
 #pragma mark - 配置分享信息
-
-- (OSMessage *)shareMessage{
+- (OSMessage *)shareMessage {
     OSMessage *message = [[OSMessage alloc] init];
     NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
     fmt.dateFormat = @"yyyy年MM月dd日HH时mm分ss秒";
@@ -80,18 +95,17 @@
 }
 
 #pragma mark - 分享到微博
-- (void)sinaWBClick{
+- (void)sinaWBClick {
     OSMessage *message = [self shareMessage];
     [OpenShare shareToWeibo:message Success:^(OSMessage *message) {
         NSLog(@"分享到sina微博成功:\%@",message);
     } Fail:^(OSMessage *message, NSError *error) {
         NSLog(@"分享到sina微博失败:\%@\n%@",message,error);
     }];
-    
 }
 
-#pragma mark - 分享到QQ好友
-- (void)qqFriend{
+#pragma mark - 分享给QQ好友
+- (void)qqFriend {
     OSMessage *message = [self shareMessage];
     [OpenShare shareToQQFriends:message Success:^(OSMessage *message) {
         NSLog(@"分享到QQ好友成功:%@",message);
@@ -111,7 +125,7 @@
     }];
 }
 
-#pragma mark - 微信的配置
+#pragma mark - 分享给微信好友
 - (void)wxFriendClick{
     OSMessage *message = [self shareMessage];
     [OpenShare shareToWeixinSession:message Success:^(OSMessage *message) {
@@ -121,6 +135,7 @@
     }];
 }
 
+#pragma mark - 分享到朋友圈
 - (void)pyqClick{
     OSMessage *message = [self shareMessage];
     [OpenShare shareToWeixinTimeline:message Success:^(OSMessage *message) {
@@ -143,10 +158,12 @@
         NSLog(@"您的设备没有发送短信功能");
     }
 }
+
 #pragma mark -- MFMessageComposeViewControllerDelegate
 
 - (void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result{
-    [controller dismissViewControllerAnimated:NO completion:nil];//关键的一句   不能为YES
+    [controller dismissViewControllerAnimated:NO completion:nil];
+    
     switch (result) {
         case MessageComposeResultCancelled:
             NSLog(@"发送取消");
